@@ -3,6 +3,15 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { cn } from "@/lib/utils";
 
 const font = Open_Sans({ subsets: ["latin"] });
 
@@ -17,8 +26,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={font.className}>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressContentEditableWarning>
+        <body className={cn(font.className, "bg-white dark:bg-[#313338]")}>
+          {/* <SignedOut>
+            <SignInButton />
+          </SignedOut> */}
+          {/* <SignedIn>
+            <UserButton />
+          </SignedIn> */}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark" //system
+            enableSystem={false}
+            storageKey="discord-theme"
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
