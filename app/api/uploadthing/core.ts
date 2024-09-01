@@ -7,9 +7,9 @@ import { auth } from "@clerk/nextjs/server";
 const f = createUploadthing();
 
 const handleAuth = () => {
-  const userId = auth();
-  if (!userId) throw new Error("Unauthorized");
-  return { userId: userId };
+  const user_id = auth();
+  if (!user_id) throw new Error("Unauthorized");
+  return { user_id: user_id };
 };
 
 // // implement const auth = (req: Request) => ({ id: "fakeId" }); // Fake auth function

@@ -6,6 +6,8 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
+import axios from "axios";
+
 import {
   Dialog,
   DialogContent,
@@ -27,18 +29,21 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { FileUpload } from "@/components/file-upload";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, {
     message: "Server name is required",
   }),
-  imageUrl: z.string().min(1, {
+  image_url: z.string().min(1, {
     message: "Server image is required",
   }),
 });
 
 export const InitialModal = () => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
@@ -48,14 +53,22 @@ export const InitialModal = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      imageUrl: "",
+      image_url: "",
     },
   });
 
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      await axios.post("/api/servers", values);
+
+      form.reset();
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   if (!isMounted) return null;
@@ -73,16 +86,21 @@ export const InitialModal = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form className="space-y-8">
+            {/* onSubmit={form.handleSubmit(onSubmit)} */}
             <div className="space-y-8 px-6">
               <div className="flex items-center justify-center text-center">
                 <FormField
                   control={form.control}
-                  name="imageUrl"
+                  name="image_url"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FileUpload endpoint="serverImage" value={field.value} onChange={field.onChange} />
+                        <FileUpload
+                          endpoint="serverImage"
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -94,7 +112,7 @@ export const InitialModal = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      Server
+                      Server name
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -107,11 +125,15 @@ export const InitialModal = () => {
                     <FormMessage />
                   </FormItem>
                 )}
-              ></FormField>
+              />
             </div>
           </form>
           <DialogFooter className="bg-gray-100 px-6 py-4">
-            <Button variant="primary" disabled={isLoading} onClick={onSubmit}>
+            <Button
+              variant="primary"
+              disabled={isLoading}
+              onClick={() => onSubmit(form.getValues())}
+            >
               Create
             </Button>
           </DialogFooter>
